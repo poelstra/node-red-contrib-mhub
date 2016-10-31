@@ -1,0 +1,13 @@
+/coverage
+/doc
+/src/test
+/dist/test
+/typings
+/tslint.json
+/.coveralls.yml
+/.editorconfig
+/.gitattributes
+/.gitignore
+/.npmignore
+/.travis.yml
+/.vscode/

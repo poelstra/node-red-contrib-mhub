@@ -1,0 +1,175 @@
+<script type="text/x-red" data-template-name="mhub in">
+	<div class="form-row">
+		<label for="node-input-server"><i class="fa fa-globe"></i> <span data-i18n="mhub.label.server"></span></label>
+		<input type="text" id="node-input-server">
+	</div>
+	<div class="form-row">
+		<label for="node-input-node"><i class="fa fa-bullseye"></i> <span data-i18n="mhub.label.node"></span></label>
+		<input type="text" id="node-input-node" data-i18n="[placeholder]mhub.placeholder.node">
+	</div>
+	<div class="form-row">
+		<label for="node-input-pattern"><i class="fa fa-tasks"></i> <span data-i18n="mhub.label.pattern"></span></label>
+		<input type="text" id="node-input-pattern" data-i18n="[placeholder]mhub.placeholder.pattern">
+	</div>
+	<div class="form-row">
+		<label for="node-input-name"><i class="fa fa-tag"></i> <span data-i18n="node-red:common.label.name"></span></label>
+		<input type="text" id="node-input-name" data-i18n="[placeholder]node-red:common.label.name">
+	</div>
+</script>
+
+<script type="text/x-red" data-help-name="mhub in">
+	<p>Connects to an MHub server and subscribes to the specified node and pattern.</p>
+	<p>Outputs each received message with the properties:</p>
+	<ul>
+		<li><code>msg.topic</code>: topic of message</li>
+		<li><code>msg.payload</code>: payload of message (note that MHub natively supports JSON data such as strings, objects, etc.)</li>
+		<li><code>msg.headers</code>: headers of message (key-value object)</li>
+	</ul>
+</script>
+
+<script type="text/javascript">
+	RED.nodes.registerType("mhub in", {
+		category: "input",
+		defaults: {
+			name: { value: "" },
+			node: { value: "" },
+			pattern: { value: "" },
+			server: { type: "mhub-server", required: true }
+		},
+		color: "#c7e9c0",
+		inputs: 0,
+		outputs: 1,
+		icon: "bridge.png",
+		label: function() {
+			if (this.name) {
+				return this.name;
+			}
+			if (!this.pattern && (!this.node || this.node === "default")) {
+				return "mhub";
+			}
+			var label = this.pattern ? this.pattern : "*";
+			if (this.node && this.node !== "default") {
+				label += "@" + this.node;
+			}
+			return label;
+		},
+		labelStyle: function() {
+			return this.name ? "node_label_italic" : "";
+		},
+	});
+</script>
+
+<script type="text/x-red" data-template-name="mhub out">
+	<div class="form-row">
+		<label for="node-input-server"><i class="fa fa-globe"></i> <span data-i18n="mhub.label.server"></span></label>
+		<input type="text" id="node-input-server">
+	</div>
+	<div class="form-row">
+		<label for="node-input-node"><i class="fa fa-bullseye"></i> <span data-i18n="mhub.label.node"></span></label>
+		<input type="text" id="node-input-node" data-i18n="[placeholder]mhub.placeholder.node">
+	</div>
+	<div class="form-row">
+		<label for="node-input-topic"><i class="fa fa-tasks"></i> <span data-i18n="mhub.label.topic"></span></label>
+		<input type="text" id="node-input-topic" data-i18n="[placeholder]mhub.placeholder.topic">
+	</div>
+	<div class="form-row">
+		<label for="node-input-name"><i class="fa fa-tag"></i> <span data-i18n="node-red:common.label.name"></span></label>
+		<input type="text" id="node-input-name" data-i18n="[placeholder]node-red:common.label.name">
+	</div>
+	<div class="form-tips"><span data-i18n="mhub.out.tip"></span></div>
+</script>
+
+<script type="text/x-red" data-help-name="mhub out">
+	<p>Connects to an MHub server and publishes messages to a node.</p>
+	<p><code>msg.payload</code> is used as the payload of the published message.
+	Note that MHub natively supports JSON for message data, so e.g. objects will
+	be transferred as-is.
+	</p>
+	<p>The topic and node used can be configured in the node or, if left blank, can be set
+		by <code>msg.topic</code> and <code>msg.node</code> respectively.</p>
+	<p>If no node is given, <code>default</code> will be used.</p>
+</script>
+
+<script type="text/javascript">
+	RED.nodes.registerType("mhub out", {
+		category: "output",
+		defaults: {
+			name: { value: "" },
+			node: { value: "" },
+			topic: { value: "" },
+			server: { type:"mhub-server", required: true }
+		},
+		color: "#c7e9c0",
+		inputs: 1,
+		outputs: 0,
+		icon: "bridge.png",
+		align: "right",
+		label: function() {
+			if (this.name) {
+				return this.name;
+			}
+			if (!this.topic && (!this.node || this.node === "default")) {
+				return "mhub";
+			}
+			var label = this.topic;
+			if (this.node && this.node !== "default") {
+				label += "@" + this.node;
+			}
+			return label;
+		},
+		labelStyle: function() {
+			return this.name ? "node_label_italic" : "";
+		}
+	});
+</script>
+
+<script type="text/x-red" data-template-name="mhub-server">
+	<div class="form-row">
+		<label for="node-config-input-host"><i class="fa fa-globe"></i> <span data-i18n="mhub.label.host"></span></label>
+		<input type="text" id="node-config-input-host" placeholder="e.g. localhost or localhost:13901">
+	</div>
+	<div class="form-row">
+		<input type="checkbox" id="node-config-input-use-tls" style="display: inline-block; width: auto; vertical-align: top;">
+		<label for="node-config-input-use-tls" style="width: auto" data-i18n="mhub.label.use-tls"></label>
+		<div id="node-config-row-tls" class="hide">
+			<label style="width: auto; margin-left: 20px; margin-right: 10px;" for="node-config-input-tls"><span data-i18n="mhub.label.tls-config"></span></label><input style="width: 300px;" type="text" id="node-config-input-tls">
+		</div>
+	</div>
+</script>
+
+<script type="text/x-red" data-help-name="mhub-server">
+	<p>A minimum <a href="https://github.com/poelstra/mhub">MHub</a> server connection requires only a server address to be added to the default configuration.</p>
+	<p>To secure the connection with SSL/TLS, a TLS Configuration must also be configured and selected.</p>
+</script>
+
+<script type="text/javascript">
+	RED.nodes.registerType("mhub-server", {
+		category: "config",
+		defaults: {
+			host: { value: "", required: true },
+			tls: { type: "tls-config", required: false },
+			useTls: { value: false },
+		},
+		label: function() {
+			return this.host;
+		},
+		oneditprepare: function () {
+			function updateTLSOptions() {
+				if ($("#node-config-input-use-tls").is(":checked")) {
+					$("#node-config-row-tls").show();
+				} else {
+					$("#node-config-row-tls").hide();
+				}
+			}
+			updateTLSOptions();
+			$("#node-config-input-use-tls").on("click", function() {
+				updateTLSOptions();
+			});
+		},
+		oneditsave: function() {
+			if (!$("#node-config-input-use-tls").is(":checked")) {
+				$("#node-config-input-tls").val("");
+			}
+		}
+	});
+</script>

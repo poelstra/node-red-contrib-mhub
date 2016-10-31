@@ -1,0 +1,39 @@
+{
+	"mhub": {
+		"label": {
+			"server": "Server",
+			"node": "Node",
+			"pattern": "Pattern",
+			"topic": "Topic",
+			"host": "Host",
+			"tls-config": "TLS Configuration",
+			"use-tls": "Enable secure (SSL/TLS) connection"
+		},
+		"placeholder": {
+			"node": "e.g. default",
+			"pattern": "e.g. /some/topic/*, leave empty for all",
+			"topic": "e.g. /some/topic"
+		},
+		"out": {
+			"tip": "Tip: Leave node or topic blank if you want to set them via msg properties."
+		},
+		"state": {
+			"connected": "Connected to server: __server__",
+			"disconnected": "Disconnected from server: __server__",
+			"connection-error": "Connection error on __server__: __error__"
+		},
+		"status": {
+			"subscribe-failed": "subscribe failed"
+		},
+		"errors": {
+			"missing-config": "Missing MHub server configuration",
+			"invalid-node": "Missing or invalid MHub node",
+			"invalid-topic": "Missing or invalid MHub topic",
+			"invalid-pattern": "Invalid MHub pattern",
+			"internal-error": "Internal error",
+			"publish-failed": "MHub publish failed: __error__",
+			"subscribe-failed": "MHub subscribe failed: __error__",
+			"unsubscribe-failed": "MHub unsubscribe failed: __error__"
+		}
+	}
+}

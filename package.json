@@ -1,0 +1,43 @@
+{
+  "name": "node-red-contrib-mhub",
+  "version": "1.0.0",
+  "description": "MHub publish/subscribe nodes for Node-RED",
+  "author": "Martin Poelstra <martin@beryllium.net>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/poelstra/node-red-contrib-mhub.git"
+  },
+  "keywords": [
+    "node-red",
+    "mhub"
+  ],
+  "node-red": {
+    "nodes": {
+      "mhub": "dist/nodes/mhub.js"
+    }
+  },
+  "bugs": {
+    "url": "https://github.com/poelstra/node-red-contrib-mhub/issues"
+  },
+  "homepage": "https://github.com/poelstra/node-red-contrib-mhub#readme",
+  "dependencies": {
+    "@types/node": "^6.0.45",
+    "@types/ws": "0.0.34",
+    "mhub": "^0.6.0",
+    "ts-promise": "^0.3.4"
+  },
+  "devDependencies": {
+    "istanbul": "^0.4.5",
+    "mocha": "^3.1.2",
+    "rimraf": "^2.5.4",
+    "tslint": "^3.15.1",
+    "typescript": "2.0.6"
+  },
+  "scripts": {
+    "lint": "tslint -t verbose src/**/*.ts",
+    "build": "mkdir -p dist/nodes/ && cp -a src/nodes/*.html src/nodes/locales/ dist/nodes/ && tsc -p src/ && npm run -s lint",
+    "clean": "rimraf -rf dist",
+    "prepublish": "npm run -s clean && npm run -s build"
+  }
+}
