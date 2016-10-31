@@ -18,6 +18,10 @@ In Node-RED:
 - search "mhub" (or "node-red-contrib-mhub")
 - click its "Install" button
 
+At a command prompt:
+- `cd ~/.node-red/`
+- `npm install node-red-contrib-mhub`
+
 # Usage
 
 Usage is very simple and basically the same as using e.g. the builtin MQTT nodes:
