@@ -41,7 +41,6 @@ export = function(RED: any): void {
 	};
 
 	const STATUS_CONNECTING: Status = { fill: "yellow", shape: "ring", text: "node-red:common.status.connecting" };
-	const STATUS_CONNECTED: Status = { fill: "green", shape: "dot", text: "node-red:common.status.connected" };
 	const STATUS_DISCONNECTED: Status = { fill: "red", shape: "ring", text: "node-red:common.status.disconnected" };
 	const STATUS_SUBSCRIBE_FAILED: Status = { fill: "yellow", shape: "ring", text: "mhub.status.subscribe-failed" };
 
@@ -232,6 +231,10 @@ export = function(RED: any): void {
 			return this._clientState === ClientState.Connecting;
 		}
 
+		public get label(): string {
+			return this._config.host;
+		}
+
 		private _setClientState(state: ClientState): void {
 			this._clientState = state;
 			this.emit("status", state);
@@ -371,7 +374,12 @@ export = function(RED: any): void {
 			if (this._server.connecting) {
 				this.status(STATUS_CONNECTING);
 			} else if (this._server.connected) {
-				this.status(STATUS_CONNECTED);
+				const connectedStatus: Status = {
+					fill: "green",
+					shape: "dot",
+					text: this._server.label,
+				};
+				this.status(connectedStatus);
 			} else {
 				this.status(STATUS_DISCONNECTED);
 			}
