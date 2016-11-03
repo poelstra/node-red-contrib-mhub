@@ -394,7 +394,8 @@ export = function(RED: any): void {
 				return;
 			}
 
-			if (typeof config.node !== "string" || !config.node) {
+			const node = config.node || "default";
+			if (typeof node !== "string") {
 				this.error(RED._("mhub.errors.invalid-node"));
 				return;
 			}
@@ -405,20 +406,20 @@ export = function(RED: any): void {
 
 			this._server.on("status", (state: ClientState) => {
 				if (state === ClientState.Connected) {
-					this._subscribe(config);
+					this._subscribe(node, config.pattern);
 				}
 			});
 			if (this._server.connected) {
-				this._subscribe(config);
+				this._subscribe(node, config.pattern);
 			}
 
 			this.on("close", () => {
-				this._server.unsubscribe(this, config.node, config.pattern);
+				this._server.unsubscribe(this, node, config.pattern);
 			});
 		}
 
-		private _subscribe(config: MHubInConfig): void {
-			this._server.subscribe(this, config.node, config.pattern, (msg: MHubMessage): void => {
+		private _subscribe(node: string, pattern: string): void {
+			this._server.subscribe(this, node, pattern, (msg: MHubMessage): void => {
 				this.send({
 					headers: msg.headers,
 					payload: msg.data,
@@ -444,14 +445,14 @@ export = function(RED: any): void {
 			}
 
 			this.on("input", (msg: any) => {
-				const node: string = config.node || msg.node;
-				if (typeof node !== "string" || !node) {
+				const node: string = config.node || msg.node || "default";
+				if (typeof node !== "string") {
 					this.warn(RED._("mhub.errors.invalid-node"));
 					return;
 				}
 				const topic: string = config.topic || msg.topic;
 				if (typeof topic !== "string" || !topic) {
-					this.warn(RED._("mhub.errors.invalid-topic"));
+					this.warn(RED._("mhub.errors.missing-or-invalid-topic"));
 					return;
 				}
 				const headers: { [key: string]: string; } = msg.headers;

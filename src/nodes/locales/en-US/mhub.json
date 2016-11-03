@@ -10,8 +10,8 @@
 			"use-tls": "Enable secure (SSL/TLS) connection"
 		},
 		"placeholder": {
-			"node": "e.g. default",
-			"pattern": "e.g. /some/topic/*, leave empty for all",
+			"node": "leave empty to use \"default\"",
+			"pattern": "e.g. /some/topic/*, leave empty for all (i.e. *)",
 			"topic": "e.g. /some/topic"
 		},
 		"out": {
@@ -27,8 +27,8 @@
 		},
 		"errors": {
 			"missing-config": "Missing MHub server configuration",
-			"invalid-node": "Missing or invalid MHub node",
-			"invalid-topic": "Missing or invalid MHub topic",
+			"invalid-node": "Invalid MHub node",
+			"missing-or-invalid-topic": "Missing or invalid MHub topic",
 			"invalid-pattern": "Invalid MHub pattern",
 			"internal-error": "Internal error",
 			"publish-failed": "MHub publish failed: __error__",

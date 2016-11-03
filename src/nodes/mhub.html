@@ -44,11 +44,11 @@
 			if (this.name) {
 				return this.name;
 			}
-			if (!this.pattern && (!this.node || this.node === "default")) {
+			if (!this.pattern && !this.node) {
 				return "mhub";
 			}
 			var label = this.pattern ? this.pattern : "*";
-			if (this.node && this.node !== "default") {
+			if (this.node) {
 				label += "@" + this.node;
 			}
 			return label;
