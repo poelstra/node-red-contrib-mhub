@@ -81,8 +81,8 @@ export = function(RED: any): void {
 	 */
 	interface Subscriptions {
 		[subscriptionId: string]: {
-			node: string,
-			pattern: string,
+			node: string;
+			pattern: string;
 			handlers: MessageHandlers;
 		};
 	}
