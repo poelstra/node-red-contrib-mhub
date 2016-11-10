@@ -305,7 +305,7 @@ export = function(RED: any): void {
 		}
 
 		private _reconnect(): void {
-			if (!this._reconnectTimer) {
+			if (this._reconnectTimer === undefined) {
 				this._close();
 				this._reconnectTimer = setTimeout(
 					() => {
@@ -319,7 +319,7 @@ export = function(RED: any): void {
 
 		private _close(): Promise<void> {
 			return new Promise<void>((resolve) => {
-				if (this._reconnectTimer) {
+				if (this._reconnectTimer !== undefined) {
 					clearTimeout(this._reconnectTimer);
 					this._reconnectTimer = undefined;
 				}
