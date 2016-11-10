@@ -46,7 +46,6 @@ export = function(RED: any): void {
 
 	interface MHubServerConfig {
 		host: string;
-		port: number;
 		useTls: boolean;
 		tls: string;
 		verifyServerCert: boolean;
@@ -259,9 +258,6 @@ export = function(RED: any): void {
 			}
 
 			let url = this._config.host;
-			if (this._config.port) {
-				url += this._config.port;
-			}
 			if (this._config.keepalive !== undefined) {
 				options.keepalive = this._config.keepalive * 1000;
 			}
