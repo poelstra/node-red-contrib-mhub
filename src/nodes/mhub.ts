@@ -310,6 +310,7 @@ export = function(RED: any): void {
 				this._reconnectTimer = setTimeout(
 					() => {
 						this._reconnectTimer = undefined;
+						this._setClientState(ClientState.Connecting);
 						this._client.connect();
 					},
 					this._reconnectTimeout
