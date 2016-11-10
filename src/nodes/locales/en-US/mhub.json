@@ -6,6 +6,7 @@
 			"pattern": "Pattern",
 			"topic": "Topic",
 			"host": "Host",
+			"keepalive": "Keep-alive time [s]",
 			"tls-config": "TLS Configuration",
 			"use-tls": "Enable secure (SSL/TLS) connection"
 		},

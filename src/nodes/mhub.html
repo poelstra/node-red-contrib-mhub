@@ -135,6 +135,10 @@
 			<label style="width: auto; margin-left: 20px; margin-right: 10px;" for="node-config-input-tls"><span data-i18n="mhub.label.tls-config"></span></label><input style="width: 300px;" type="text" id="node-config-input-tls">
 		</div>
 	</div>
+	<div class="form-row">
+		<label for="node-config-input-keepalive" style="width: auto"><i class="fa fa-clock-o"></i> <span data-i18n="mhub.label.keepalive"></span></label>
+		<input type="text" id="node-config-input-keepalive" style="width: 50px">
+	</div>
 </script>
 
 <script type="text/x-red" data-help-name="mhub-server">
@@ -147,6 +151,7 @@
 		category: "config",
 		defaults: {
 			host: { value: "", required: true },
+			keepalive: { value: 30, validate: function(n) { return n === undefined || RED.validators.number() && n >= 0; } },
 			tls: { type: "tls-config", required: false },
 			useTls: { value: false },
 		},
@@ -154,6 +159,9 @@
 			return this.host;
 		},
 		oneditprepare: function () {
+			if ($("#node-config-input-keepalive").val() === "") {
+				$("#node-config-input-keepalive").val(30);
+			}
 			function updateTLSOptions() {
 				if ($("#node-config-input-use-tls").is(":checked")) {
 					$("#node-config-row-tls").show();

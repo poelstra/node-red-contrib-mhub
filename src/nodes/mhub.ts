@@ -6,7 +6,7 @@
 
 
 import * as events from "events";
-import MHubClient, { Message as MHubMessage } from "mhub";
+import MHubClient, { MClientOptions, Message as MHubMessage } from "mhub";
 import Promise from "ts-promise";
 
 declare type RedMessage = Object;
@@ -50,6 +50,7 @@ export = function(RED: any): void {
 		useTls: boolean;
 		tls: string;
 		verifyServerCert: boolean;
+		keepalive: number;
 	}
 
 	enum ClientState {
@@ -249,11 +250,11 @@ export = function(RED: any): void {
 				return;
 			}
 
-			let tlsOptions: any;
+			let options: MClientOptions = {};
 			if (this._config.useTls && this._config.tls) {
 				const tlsNode = RED.nodes.getNode(this._config.tls);
 				if (tlsNode) {
-					tlsNode.addTLSOptions(tlsOptions);
+					tlsNode.addTLSOptions(options);
 				}
 			}
 
@@ -261,7 +262,10 @@ export = function(RED: any): void {
 			if (this._config.port) {
 				url += this._config.port;
 			}
-			this._client = new MHubClient(url, tlsOptions);
+			if (this._config.keepalive !== undefined) {
+				options.keepalive = this._config.keepalive * 1000;
+			}
+			this._client = new MHubClient(url, options);
 			this._setClientState(ClientState.Connecting);
 			this._client.on("open", (): void => {
 				this.log(RED._("mhub.state.connected", { server: this._client.url }));
