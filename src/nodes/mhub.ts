@@ -46,7 +46,7 @@ export = function(RED: any): void {
 
 	interface MHubServerConfig {
 		host: string;
-		useTls: boolean;
+		usetls: boolean;
 		tls: string;
 		verifyServerCert: boolean;
 		keepalive: number;
@@ -250,14 +250,17 @@ export = function(RED: any): void {
 			}
 
 			let options: MClientOptions = {};
-			if (this._config.useTls && this._config.tls) {
+			let url = this._config.host;
+			if (this._config.usetls && this._config.tls) {
 				const tlsNode = RED.nodes.getNode(this._config.tls);
 				if (tlsNode) {
 					tlsNode.addTLSOptions(options);
 				}
+				if (url.indexOf("://") < 0) {
+					url = "wss://" + url;
+				}
 			}
 
-			let url = this._config.host;
 			if (this._config.keepalive !== undefined) {
 				options.keepalive = this._config.keepalive * 1000;
 			}

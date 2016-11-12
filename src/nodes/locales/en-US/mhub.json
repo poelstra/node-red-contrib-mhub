@@ -8,7 +8,7 @@
 			"host": "Host",
 			"keepalive": "Keep-alive time [s]",
 			"tls-config": "TLS Configuration",
-			"use-tls": "Enable secure (SSL/TLS) connection"
+			"usetls": "Enable secure (SSL/TLS) connection"
 		},
 		"placeholder": {
 			"node": "leave empty to use \"default\"",

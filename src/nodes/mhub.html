@@ -129,8 +129,8 @@
 		<input type="text" id="node-config-input-host" placeholder="e.g. localhost or a.b.c.d:1234">
 	</div>
 	<div class="form-row">
-		<input type="checkbox" id="node-config-input-use-tls" style="display: inline-block; width: auto; vertical-align: top;">
-		<label for="node-config-input-use-tls" style="width: auto" data-i18n="mhub.label.use-tls"></label>
+		<input type="checkbox" id="node-config-input-usetls" style="display: inline-block; width: auto; vertical-align: top;">
+		<label for="node-config-input-usetls" style="width: auto" data-i18n="mhub.label.usetls"></label>
 		<div id="node-config-row-tls" class="hide">
 			<label style="width: auto; margin-left: 20px; margin-right: 10px;" for="node-config-input-tls"><span data-i18n="mhub.label.tls-config"></span></label><input style="width: 300px;" type="text" id="node-config-input-tls">
 		</div>
@@ -153,7 +153,7 @@
 			host: { value: "", required: true },
 			keepalive: { value: 30, validate: function(n) { return n === undefined || RED.validators.number() && n >= 0; } },
 			tls: { type: "tls-config", required: false },
-			useTls: { value: false },
+			usetls: { value: false },
 		},
 		label: function() {
 			return this.host;
@@ -163,19 +163,19 @@
 				$("#node-config-input-keepalive").val(30);
 			}
 			function updateTLSOptions() {
-				if ($("#node-config-input-use-tls").is(":checked")) {
+				if ($("#node-config-input-usetls").is(":checked")) {
 					$("#node-config-row-tls").show();
 				} else {
 					$("#node-config-row-tls").hide();
 				}
 			}
 			updateTLSOptions();
-			$("#node-config-input-use-tls").on("click", function() {
+			$("#node-config-input-usetls").on("click", function() {
 				updateTLSOptions();
 			});
 		},
 		oneditsave: function() {
-			if (!$("#node-config-input-use-tls").is(":checked")) {
+			if (!$("#node-config-input-usetls").is(":checked")) {
 				$("#node-config-input-tls").val("");
 			}
 		}
