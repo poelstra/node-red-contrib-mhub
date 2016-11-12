@@ -45,6 +45,10 @@ Usage is very simple and basically the same as using e.g. the builtin MQTT nodes
 
 Notable changes listed below, for details see the version tags in Git.
 
+1.2.0 (2016-11-12):
+- Implement keepalive (MHub 0.7.0)
+- Make TLS actually work
+
 1.1.0 (2016-11-03):
 - Allow leaving 'node' field empty to use "default"
 - Show hostname as connected status
