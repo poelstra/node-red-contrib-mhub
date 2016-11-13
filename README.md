@@ -11,7 +11,6 @@ it very powerful, yet still simple enough to be directly implemented in e.g. a m
 # Installation
 
 In Node-RED:
-
 - click the top-right 'hamburger' menu
 - click "Manage palette"
 - click the "Install" tab
@@ -19,8 +18,16 @@ In Node-RED:
 - click its "Install" button
 
 At a command prompt:
-- `cd ~/.node-red/`
-- `npm install node-red-contrib-mhub`
+```sh
+cd ~/.node-red/
+npm install node-red-contrib-mhub
+```
+
+Upgrading can currently only be done at the command prompt:
+```sh
+cd ~/.node-red/
+npm update node-red-contrib-mhub
+```
 
 # Usage
 
@@ -29,14 +36,14 @@ Usage is very simple and basically the same as using e.g. the builtin MQTT nodes
 - Drag an MHub in or out node onto the canvas
 - Double-click to edit properties
 - Click the pencil icon to add/edit server settings
-- Fill in the other details (try node "default")
+- Fill in the other details
 	- For an In node, leave the "Pattern" empty to receive all messages
 	- For an Out node, use any "Topic" you like.
 
 # Caveats
 
 - MHub messages are sent as an object containing topic, data and headers properties.
-  Node-RED by convention calls the `.data` property `.payload`, so the MHub in/out nodes also emit/accept that name instead.
+  Node-RED by convention calls the `.data` property `.payload`, so the MHub in/out nodes emit/accept that name instead.
 - Messages in MHub are JSON objects, but many Node-RED nodes default to set the `.payload` property to a string.
   It's an easy mistake to enter JSON in that box, which will cause the other side to receive a string instead of
   an object.
