@@ -113,9 +113,7 @@ export = function(RED: any): void {
 
 			this.on("close", (done: () => void): void => {
 				this._stopping = true;
-				this._close().then(() => {
-					done();
-				});
+				this._close().then(done).done();
 			});
 		}
 
@@ -322,6 +320,10 @@ export = function(RED: any): void {
 		}
 
 		private _close(): Promise<void> {
+			if (!this._client) {
+				// Not initialized yet, so nothing to do
+				return Promise.resolve();
+			}
 			return new Promise<void>((resolve) => {
 				if (this._reconnectTimer !== undefined) {
 					clearTimeout(this._reconnectTimer);
