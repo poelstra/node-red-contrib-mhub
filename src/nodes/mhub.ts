@@ -324,20 +324,13 @@ export = function(RED: any): void {
 				// Not initialized yet, so nothing to do
 				return Promise.resolve();
 			}
-			return new Promise<void>((resolve) => {
-				if (this._reconnectTimer !== undefined) {
-					clearTimeout(this._reconnectTimer);
-					this._reconnectTimer = undefined;
-				}
-				if (this._clientState === ClientState.Connected) {
-					this._client.once("close", resolve);
-					this._client.close();
-				} else {
-					this._client.close();
-					this._setClientState(ClientState.Disconnected);
-					resolve(undefined);
-				}
-			});
+			if (this._reconnectTimer !== undefined) {
+				clearTimeout(this._reconnectTimer);
+				this._reconnectTimer = undefined;
+			}
+			return Promise.resolve(this._client.close().then(() => {
+				this._setClientState(ClientState.Disconnected);
+			}));
 		}
 	}
 
