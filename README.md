@@ -52,6 +52,10 @@ Usage is very simple and basically the same as using e.g. the builtin MQTT nodes
 
 Notable changes listed below, for details see the version tags in Git.
 
+1.2.1 (2017-02-26):
+- Fix node stop/restart when DNS lookup takes long (MHub 0.8.0)
+- Fix hang during stop when server node configured without publish/subscribe nodes
+
 1.2.0 (2016-11-12):
 - Implement keepalive (MHub 0.7.0)
 - Make TLS actually work
