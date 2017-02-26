@@ -111,6 +111,11 @@ export = function(RED: any): void {
 			super(config);
 			this._config = config;
 
+			// It is relatively common to have many publish/subscribe
+			// nodes connected to one server node. Prevent warnings
+			// from NodeJS.
+			this.setMaxListeners(Infinity);
+
 			this.on("close", (done: () => void): void => {
 				this._stopping = true;
 				this._close().then(done).done();
