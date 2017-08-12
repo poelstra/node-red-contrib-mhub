@@ -2,8 +2,8 @@
 	"compilerOptions": {
 		"target": "es5",
 		"module": "commonjs",
+		"strict": true,
 		"declaration": true,
-		"noImplicitAny": true,
 		"removeComments": false,
 		"sourceMap": true,
 		"noLib": false,
@@ -16,7 +16,7 @@
 			"node"
 		],
 		"lib": [
-			"es5", "es2015.promise"
+			"es5"
 		]
 	}
 }

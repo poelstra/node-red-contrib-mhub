@@ -40,7 +40,7 @@ export = function(RED: any): void {
 	 * more straightforward as TypeScript classes.
 	 */
 	// tslint:disable-next-line:variable-name
-	let NodeRedNode: typeof Node = <any>function(config: any): any {
+	let NodeRedNode: typeof Node = <any>function(this: Node, config: any): any {
 		RED.nodes.createNode(this, config);
 	};
 
@@ -104,7 +104,7 @@ export = function(RED: any): void {
 		private _client: MHubClient;
 		private _clientState: ClientState = ClientState.Disconnected;
 		private _reconnectTimeout: number = 5000; // ms
-		private _reconnectTimer: NodeJS.Timer;
+		private _reconnectTimer: NodeJS.Timer | undefined;
 		private _nodes: { [id: string]: Node; } = {}; // Registered NodeRED nodes
 		private _subscriptions: Subscriptions = {};
 		private _subscriptionCounter: number = 0;
@@ -144,7 +144,7 @@ export = function(RED: any): void {
 			// TODO Unsubscribe everything for this node?
 			delete this._nodes[node.id];
 			if (Object.keys(this._nodes).length === 0) {
-				this._close().then(done);
+				this._close().then(done || noop);
 			} else if (done) {
 				Promise.resolve().then(done);
 			}
@@ -349,7 +349,7 @@ export = function(RED: any): void {
 	}
 
 	interface MHubInConfig extends MHubBaseConfig {
-		pattern?: string;
+		pattern: string;
 	}
 
 	class MHubBaseNode extends NodeRedNode {
