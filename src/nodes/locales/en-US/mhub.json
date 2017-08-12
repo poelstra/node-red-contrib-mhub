@@ -12,7 +12,7 @@
 		},
 		"placeholder": {
 			"node": "leave empty to use \"default\"",
-			"pattern": "e.g. /some/topic/*, leave empty for all (i.e. *)",
+			"pattern": "e.g. /some/topic/*, leave empty for all (i.e. **)",
 			"topic": "e.g. /some/topic"
 		},
 		"out": {
