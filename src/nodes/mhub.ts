@@ -29,6 +29,10 @@ declare class Node extends events.EventEmitter {
 	public status(config: Status): void;
 }
 
+function noop(): void {
+	/* no operation */
+}
+
 export = function(RED: any): void {
 	/**
 	 * Baseclass for Node-RED nodes.
@@ -317,7 +321,7 @@ export = function(RED: any): void {
 					() => {
 						this._reconnectTimer = undefined;
 						this._setClientState(ClientState.Connecting);
-						this._client.connect();
+						this._client.connect().catch(noop);
 					},
 					this._reconnectTimeout
 				);
