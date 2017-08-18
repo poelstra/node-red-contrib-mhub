@@ -1,0 +1,17 @@
+{
+	// Use IntelliSense to learn about possible Node.js debug attributes.
+	// Hover to view descriptions of existing attributes.
+	// For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+	"version": "0.2.0",
+	"configurations": [
+		{
+			// To debug node-red, use e.g.
+			// node --inspect-brk ~/npm/lib/node_modules/node-red/red.js
+			"type": "node",
+			"request": "attach",
+			"name": "Attach",
+			"port": 9229,
+			"restart": true
+		}
+	]
+}
