@@ -46,6 +46,7 @@ export = function(RED: any): void {
 
 	const STATUS_CONNECTING: Status = { fill: "yellow", shape: "ring", text: "node-red:common.status.connecting" };
 	const STATUS_DISCONNECTED: Status = { fill: "red", shape: "ring", text: "node-red:common.status.disconnected" };
+	const STATUS_ERROR: Status = { fill: "red", shape: "ring", text: "mhub.status.error" };
 	const STATUS_SUBSCRIBE_FAILED: Status = { fill: "yellow", shape: "ring", text: "mhub.status.subscribe-failed" };
 
 	interface MHubServerConfig {
@@ -100,6 +101,7 @@ export = function(RED: any): void {
 	 * Connections are shared between Node-RED nodes.
 	 */
 	class MHubServerNode extends NodeRedNode {
+		public lastError: Error | undefined;
 		private _config: MHubServerConfig;
 		private _client: MHubClient;
 		private _clientState: ClientState = ClientState.Disconnected;
@@ -110,6 +112,7 @@ export = function(RED: any): void {
 		private _subscriptionCounter: number = 0;
 		private _nodePatterns: NodePatterns = {};
 		private _stopping: boolean = false; // Destructing node
+		private _connectPromise: Promise<void> | undefined;
 
 		constructor(config: MHubServerConfig) {
 			super(config);
@@ -120,9 +123,45 @@ export = function(RED: any): void {
 			// from NodeJS.
 			this.setMaxListeners(Infinity);
 
+			// Handle Node-RED node destruction
 			this.on("close", (done: () => void): void => {
 				this._stopping = true;
 				this._close().then(done).done();
+			});
+
+			// Create MHub client
+			const options: MClientOptions = {
+				noImplicitConnect: true,
+			};
+			let url = this._config.host;
+			if (this._config.usetls && this._config.tls) {
+				const tlsNode = RED.nodes.getNode(this._config.tls);
+				if (tlsNode) {
+					tlsNode.addTLSOptions(options);
+				}
+				if (url.indexOf("://") < 0) {
+					url = "wss://" + url;
+				}
+			}
+
+			if (this._config.keepalive !== undefined) {
+				options.keepalive = this._config.keepalive * 1000;
+			}
+			this._client = new MHubClient(url, options);
+			this._client.on("open", (): void => {
+				this.log(RED._("mhub.state.connected", { server: this._client.url }));
+				this._setClientState(ClientState.Connected);
+			});
+			this._client.on("close", (): void => {
+				this.log(RED._("mhub.state.disconnected", { server: this._client.url }));
+				this._handleClose();
+			});
+			this._client.on("error", (e: Error): void => {
+				this.error(RED._("mhub.state.connection-error", { error: e, server: this._client.url }));
+				this._handleClose(e);
+			});
+			this._client.on("message", (msg: MHubMessage, subscription: string): void => {
+				this._handleMessage(msg, subscription);
 			});
 		}
 
@@ -133,7 +172,7 @@ export = function(RED: any): void {
 		 */
 		public register(node: Node): void {
 			this._nodes[node.id] = node;
-			this._init();
+			this._ensureConnection();
 		}
 
 		/**
@@ -175,7 +214,10 @@ export = function(RED: any): void {
 						pattern,
 						handlers: {},
 					};
-					resolve(this._client.subscribe(node, pattern, subId));
+					resolve(
+						this._ensureConnection()
+							.then(() => this._client.subscribe(node, pattern, subId))
+					);
 				} else {
 					resolve(undefined);
 				}
@@ -209,9 +251,9 @@ export = function(RED: any): void {
 				return;
 			}
 			// TODO unsubscribe from MHub once it supports that
-			// this._client.unsubscribe(node, pattern, subId).catch((e) => {
+			// this._ensureConnection().then(() => this._client.unsubscribe(node, pattern, subId).catch((e) => {
 			// 	this.warn(RED._("mhub.errors.unsubscribe-failed", { error: e }));
-			// });
+			// }));
 			delete this._subscriptions[subId];
 			delete nodeSubs[pattern];
 			if (Object.keys(this._nodePatterns).length === 0) {
@@ -223,11 +265,7 @@ export = function(RED: any): void {
 		 * Publish message to MHub node.
 		 */
 		public publish(node: string, msg: MHubMessage): Promise<void> {
-			if (!this._client) {
-				this.error(RED._("mhub.errors.internal-error"));
-				return Promise.reject(new Error(RED._("mhub.errors.internal-error")));
-			}
-			return Promise.resolve(this._client.publish(node, msg));
+			return this._ensureConnection().then(() => this._client.publish(node, msg));
 		}
 
 		public get connected(): boolean {
@@ -244,50 +282,23 @@ export = function(RED: any): void {
 
 		private _setClientState(state: ClientState): void {
 			this._clientState = state;
+			if (this._clientState !== ClientState.Disconnected) {
+				this.lastError = undefined;
+			}
 			this.emit("status", state);
 		}
 
-		/**
-		 * Lazy init: create MHub client only when there's someone actively
-		 * using this configuration.
-		 */
-		private _init(): void {
-			if (this._client) {
-				return;
+		private _ensureConnection(): Promise<void> {
+			if (this._connectPromise) {
+				return this._connectPromise;
 			}
 
-			let options: MClientOptions = {};
-			let url = this._config.host;
-			if (this._config.usetls && this._config.tls) {
-				const tlsNode = RED.nodes.getNode(this._config.tls);
-				if (tlsNode) {
-					tlsNode.addTLSOptions(options);
-				}
-				if (url.indexOf("://") < 0) {
-					url = "wss://" + url;
-				}
-			}
-
-			if (this._config.keepalive !== undefined) {
-				options.keepalive = this._config.keepalive * 1000;
-			}
-			this._client = new MHubClient(url, options);
 			this._setClientState(ClientState.Connecting);
-			this._client.on("open", (): void => {
-				this.log(RED._("mhub.state.connected", { server: this._client.url }));
-				this._setClientState(ClientState.Connected);
-			});
-			this._client.on("close", (): void => {
-				this.log(RED._("mhub.state.disconnected", { server: this._client.url }));
-				this._handleClose();
-			});
-			this._client.on("error", (e: Error): void => {
-				this.error(RED._("mhub.state.connection-error", { error: e, server: this._client.url }));
-				this._handleClose();
-			});
-			this._client.on("message", (msg: MHubMessage, subscription: string): void => {
-				this._handleMessage(msg, subscription);
-			});
+			let p = this._client.connect();
+			p.catch((err) => this._close(new Error("connect failed")));
+
+			this._connectPromise = p;
+			return p;
 		}
 
 		private _handleMessage(msg: MHubMessage, subscriptionId: string): void {
@@ -303,43 +314,44 @@ export = function(RED: any): void {
 			}
 		}
 
-		private _handleClose(): void {
-			this._setClientState(ClientState.Disconnected);
+		private _handleClose(err?: Error): void {
+			this._connectPromise = undefined;
 			this._nodes = {};
 			this._nodePatterns = {};
 			this._subscriptions = {};
 			this._subscriptionCounter = 0;
+			this._close(err);
 			if (!this._stopping) {
-				this._reconnect();
+				this._scheduleReconnect();
 			}
 		}
 
-		private _reconnect(): void {
-			if (this._reconnectTimer === undefined) {
-				this._close();
-				this._reconnectTimer = setTimeout(
-					() => {
-						this._reconnectTimer = undefined;
-						this._setClientState(ClientState.Connecting);
-						this._client.connect().catch(noop);
-					},
-					this._reconnectTimeout
-				);
+		private _scheduleReconnect(): void {
+			if (this._reconnectTimer) {
+				// A reconnect is already planned, wait for that
+				return;
 			}
+			this._reconnectTimer = setTimeout(
+				() => {
+					this._reconnectTimer = undefined;
+					if (!this._stopping) {
+						this._ensureConnection();
+					}
+				},
+				this._reconnectTimeout
+			);
 		}
 
-		private _close(): Promise<void> {
-			if (!this._client) {
-				// Not initialized yet, so nothing to do
-				return Promise.resolve();
-			}
-			if (this._reconnectTimer !== undefined) {
+		private _close(err?: Error): Promise<void> {
+			if (this._stopping && this._reconnectTimer !== undefined) {
 				clearTimeout(this._reconnectTimer);
 				this._reconnectTimer = undefined;
 			}
-			return Promise.resolve(this._client.close().then(() => {
+			this._connectPromise = undefined;
+			return this._client.close().then(() => {
+				this.lastError = err || this.lastError;
 				this._setClientState(ClientState.Disconnected);
-			}));
+			});
 		}
 	}
 
@@ -388,6 +400,10 @@ export = function(RED: any): void {
 					text: this._server.label,
 				};
 				this.status(connectedStatus);
+			} else if (this._server.lastError) {
+				let errStatus = { ...STATUS_ERROR };
+				errStatus.text = RED._(errStatus.text, { reason: this._server.lastError.message });
+				this.status(errStatus);
 			} else {
 				this.status(STATUS_DISCONNECTED);
 			}

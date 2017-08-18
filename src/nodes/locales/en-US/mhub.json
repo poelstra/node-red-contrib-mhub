@@ -24,7 +24,8 @@
 			"connection-error": "Connection error on __server__: __error__"
 		},
 		"status": {
-			"subscribe-failed": "subscribe failed"
+			"subscribe-failed": "subscribe failed",
+			"error": "error: __reason__"
 		},
 		"errors": {
 			"missing-config": "Missing MHub server configuration",
