@@ -13,7 +13,8 @@
 		"placeholder": {
 			"node": "leave empty to use \"default\"",
 			"pattern": "e.g. /some/topic/*, leave empty for all (i.e. **)",
-			"topic": "e.g. /some/topic"
+			"topic": "e.g. /some/topic",
+			"username": "leave empty for anonymous"
 		},
 		"out": {
 			"tip": "Tip: Leave node or topic blank if you want to set them via msg properties."

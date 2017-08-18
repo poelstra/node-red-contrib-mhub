@@ -136,6 +136,14 @@
 		</div>
 	</div>
 	<div class="form-row">
+		<label for="node-config-input-username"><i class="fa fa-user"></i> <span data-i18n="node-red:common.label.username"></span></label>
+		<input type="text" id="node-config-input-username" data-i18n="[placeholder]mhub.placeholder.username">
+	</div>
+	<div class="form-row">
+		<label for="node-config-input-password"><i class="fa fa-lock"></i> <span data-i18n="node-red:common.label.password"></span></label>
+		<input type="password" id="node-config-input-password">
+	</div>
+	<div class="form-row">
 		<label for="node-config-input-keepalive" style="width: auto"><i class="fa fa-clock-o"></i> <span data-i18n="mhub.label.keepalive"></span></label>
 		<input type="text" id="node-config-input-keepalive" style="width: 50px">
 	</div>
@@ -155,13 +163,22 @@
 			tls: { type: "tls-config", required: false },
 			usetls: { value: false },
 		},
+		credentials: {
+			username: { type: "text" },
+			password: { type: "password" }
+		},
 		label: function() {
-			return this.host;
+			var label = this.host || "undefined";
+			if (this.credentials && this.credentials.user) {
+				label = this.credentials.user + "@" + label;
+			}
+			return label;
 		},
 		oneditprepare: function () {
 			if ($("#node-config-input-keepalive").val() === "") {
 				$("#node-config-input-keepalive").val(30);
 			}
+			// Show/hide TLS options
 			function updateTLSOptions() {
 				if ($("#node-config-input-usetls").is(":checked")) {
 					$("#node-config-row-tls").show();

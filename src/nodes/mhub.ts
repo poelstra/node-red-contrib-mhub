@@ -17,8 +17,9 @@ declare interface Status {
 	text?: string;
 }
 
-declare class Node extends events.EventEmitter {
+declare class Node<TCredentials = {}> extends events.EventEmitter {
 	public id: string;
+	public credentials: TCredentials;
 	constructor(config: any);
 	public send(msg: RedMessage): void;
 	public send(msg: RedMessage[]): void;
@@ -40,7 +41,7 @@ export = function(RED: any): void {
 	 * more straightforward as TypeScript classes.
 	 */
 	// tslint:disable-next-line:variable-name
-	let NodeRedNode: typeof Node = <any>function(this: Node, config: any): any {
+	let NodeRedNode: typeof Node = <any>function<TCredentials>(this: Node<TCredentials>, config: any): any {
 		RED.nodes.createNode(this, config);
 	};
 
@@ -55,6 +56,11 @@ export = function(RED: any): void {
 		tls: string;
 		verifyServerCert: boolean;
 		keepalive: number;
+	}
+
+	interface MHubServerCredentials {
+		username: string;
+		password: string;
 	}
 
 	enum ClientState {
@@ -100,7 +106,7 @@ export = function(RED: any): void {
 	 * MHub connection node.
 	 * Connections are shared between Node-RED nodes.
 	 */
-	class MHubServerNode extends NodeRedNode {
+	class MHubServerNode extends NodeRedNode<MHubServerCredentials> {
 		public lastError: Error | undefined;
 		private _config: MHubServerConfig;
 		private _client: MHubClient;
@@ -296,6 +302,14 @@ export = function(RED: any): void {
 			this._setClientState(ClientState.Connecting);
 			let p = this._client.connect();
 			p.catch((err) => this._close(new Error("connect failed")));
+
+			if (this.credentials.username) {
+				p = p.then(() => {
+					const loginPromise = this._client.login(this.credentials.username, this.credentials.password);
+					loginPromise.catch((err) => this._close(new Error("login failed")));
+					return loginPromise;
+				});
+			}
 
 			this._connectPromise = p;
 			return p;
@@ -496,7 +510,12 @@ export = function(RED: any): void {
 		}
 	}
 
-	RED.nodes.registerType("mhub-server", MHubServerNode);
+	RED.nodes.registerType("mhub-server", MHubServerNode, {
+		credentials: {
+			"username": { type: "text" },
+			"password": { type: "password" },
+		},
+	});
 	RED.nodes.registerType("mhub in", MHubInNode);
 	RED.nodes.registerType("mhub out", MHubOutNode);
 };
