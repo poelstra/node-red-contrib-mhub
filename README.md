@@ -17,17 +17,13 @@ In Node-RED:
 - search "mhub" (or "node-red-contrib-mhub")
 - click its "Install" button
 
-At a command prompt:
+Or, using the command prompt:
 ```sh
 cd ~/.node-red/
 npm install node-red-contrib-mhub
 ```
 
-Upgrading can currently only be done at the command prompt:
-```sh
-cd ~/.node-red/
-npm update node-red-contrib-mhub
-```
+When an update is available, again use Node-RED's Palette Manager to update.
 
 # Usage
 
@@ -37,8 +33,8 @@ Usage is very simple and basically the same as using e.g. the builtin MQTT nodes
 - Double-click to edit properties
 - Click the pencil icon to add/edit server settings
 - Fill in the other details
-	- For an In node, leave the "Pattern" empty to receive all messages
-	- For an Out node, use any "Topic" you like.
+	- For an In node, leave the "Pattern" empty to receive all messages, or e.g. `/myhome/**/temperature`
+	- For an Out node, use any "Topic" you like, e.g. `/myhome/room1/deviceA/temperature`
 
 # Caveats
 
@@ -46,7 +42,7 @@ Usage is very simple and basically the same as using e.g. the builtin MQTT nodes
   Node-RED by convention calls the `.data` property `.payload`, so the MHub in/out nodes emit/accept that name instead.
 - Messages in MHub are JSON objects, but many Node-RED nodes default to set the `.payload` property to a string.
   It's an easy mistake to enter JSON in that box, which will cause the other side to receive a string instead of
-  an object.
+  an object. Use a `json` node to convert it to an object first.
 
 # Changelog
 
