@@ -19,11 +19,32 @@
 
 <script type="text/x-red" data-help-name="mhub in">
 	<p>Connects to an MHub server and subscribes to the specified node and pattern.</p>
-	<p>Outputs each received message with the properties:</p>
+
+	<h3>Outputs</h3>
+	<dl class="message-properties">
+		<dt>topic <span class="property-type">string</span></dt>
+		<dd>message topic, e.g. <code>/myhome/room1/temperature</code></dd>
+		<dt>payload <span class="property-type">any</span></dt>
+		<dd>any JSON-serializable type (number, string, boolean, object, array)</dd>
+		<dt>headers <span class="property-type">key-value object</span></dt>
+		<dd>message headers, e.g. <code>{ "foo": "bar" }</code></dd>
+	</dl>
+
+	<h3>Details</h3>
+	<p>An MHub subscription pattern can be specified as a glob pattern, e.g.:</p>
 	<ul>
-		<li><code>msg.topic</code>: topic of message</li>
-		<li><code>msg.payload</code>: payload of message (note that MHub natively supports JSON data such as strings, objects, etc.)</li>
-		<li><code>msg.headers</code>: headers of message (key-value object)</li>
+		<li><code>/myhome/**</code> would match <code>/myhome/something</code> and <code>/myhome/room1/temperature</code></li>
+		<li><code>/myhome/*/temperature</code> would match <code>/myhome/room1/temperature</code> but <i>not</i> <code>/myhome/room1/deviceA/temperature</code></li>
+		<li><code>/myhome/room{1,2}/**</code> matches anything starting with <code>/myhome/room1/</code> or <code>/myhome/room1/</code></li>
+	</ul>
+	<p>Leave the pattern empty to receive all messages (when allowed by current user).</p>
+	<p>Leave the node property empty to connect to node <code>default</code>.</p>
+
+	<h3>References</h3>
+	<ul>
+		<li><a href="https://github.com/poelstra/node-red-contrib-mhub">Node-RED MHub</a> - Homepage of MHub for Node-RED</li>
+		<li><a href="https://github.com/poelstra/mhub">MHub</a> - MHub homepage including further documentation</li>
+		<li><a href="https://github.com/micromatch/micromatch/#matching-features">Micromatch</a> - Pattern matcher used in MHub</li>
 	</ul>
 </script>
 
@@ -80,14 +101,37 @@
 </script>
 
 <script type="text/x-red" data-help-name="mhub out">
-	<p>Connects to an MHub server and publishes messages to a node.</p>
+	<p>Publish messages to an MHub node.</p>
+
+	<h3>Inputs</h3>
+	<dl class="message-properties">
+		<dt class="optional">topic <span class="property-type">string</span></dt>
+		<dd>message topic, e.g. <code>/myhome/room1/temperature</code></dd>
+		<dt class="optional">payload <span class="property-type">any</span></dt>
+		<dd>any JSON-serializable type (number, string, boolean, object, array)</dd>
+		<dt class="optional">headers <span class="property-type">key-value object</span></dt>
+		<dd>message headers, e.g. <code>{ "foo": "bar" }</code></dd>
+		<dt class="optional">node <span class="property-type">string</span></dt>
+		<dd>MHub node</dd>
+	</dl>
+
+	<h3>Details</h3>
+	<p>Messages in MHub are posted to a topic on a node of an MHub server, and can optionally
+		carry a payload.</p>
 	<p><code>msg.payload</code> is used as the payload of the published message.
-	Note that MHub natively supports JSON for message data, so e.g. objects will
-	be transferred as-is.
+		Note that MHub natively supports JSON for message data, so strings, but also
+		numbers or objects can be sent and received. (Note: buffers are not supported, use e.g.
+		base64 encoding to send raw bytes.)
 	</p>
 	<p>The topic and node used can be configured in the node or, if left blank, can be set
 		by <code>msg.topic</code> and <code>msg.node</code> respectively.</p>
 	<p>If no node is given, <code>default</code> will be used.</p>
+
+	<h3>References</h3>
+	<ul>
+		<li><a href="https://github.com/poelstra/node-red-contrib-mhub">Node-RED MHub</a> - Homepage of MHub for Node-RED</li>
+		<li><a href="https://github.com/poelstra/mhub">MHub</a> - MHub homepage including further documentation</li>
+	</ul>
 </script>
 
 <script type="text/javascript">
@@ -150,8 +194,16 @@
 </script>
 
 <script type="text/x-red" data-help-name="mhub-server">
-	<p>A minimum <a href="https://github.com/poelstra/mhub">MHub</a> server connection requires only a server address to be added to the default configuration.</p>
+	<p>A MHub server config allows many MHub In and MHub Out nodes to share the same connection.</p>
+	<h3>Details</h3>
+	<p>A minimum <a href="https://github.com/poelstra/mhub">MHub</a> server connection requires only a server
+		address to be added to the default configuration.</p>
 	<p>To secure the connection with SSL/TLS, a TLS Configuration must also be configured and selected.</p>
+	<h3>References</h3>
+	<ul>
+		<li><a href="https://github.com/poelstra/node-red-contrib-mhub">Node-RED MHub</a> - Homepage of MHub for Node-RED</li>
+		<li><a href="https://github.com/poelstra/mhub">MHub</a> - MHub homepage including further documentation</li>
+	</ul>
 </script>
 
 <script type="text/javascript">
