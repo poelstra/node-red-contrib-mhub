@@ -48,6 +48,12 @@ Usage is very simple and basically the same as using e.g. the builtin MQTT nodes
 
 Notable changes listed below, for details see the version tags in Git.
 
+1.3.0 (2017-08-22):
+- Implement user/pass authentication of MHub 0.9.0
+- Silence EventEmitter warning when using many in/out nodes (false-positive)
+- Improved feedback on node's status when connection/login fails
+- Update integrated node help to Node-RED's latest format
+
 1.2.1 (2017-02-26):
 - Fix node stop/restart when DNS lookup takes long (MHub 0.8.0)
 - Fix hang during stop when server node configured without publish/subscribe nodes
