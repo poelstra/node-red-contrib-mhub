@@ -4,11 +4,10 @@
  * Copyright (C) 2016 Martin Poelstra
  */
 
-
 import * as events from "events";
 import MHubClient, { MClientOptions, Message as MHubMessage } from "mhub";
 
-declare type RedMessage = Object;
+declare type RedMessage = object;
 
 declare interface Status {
 	fill?: "red" | "green" | "yellow" | "blue" | "grey";
@@ -20,9 +19,7 @@ declare class Node<TCredentials = {}> extends events.EventEmitter {
 	public id: string;
 	public credentials: TCredentials;
 	constructor(config: any);
-	public send(msg: RedMessage): void;
-	public send(msg: RedMessage[]): void;
-	public send(msg: (RedMessage[] | RedMessage)[]): void;
+	public send(msg: RedMessage | RedMessage[] | Array<RedMessage[] | RedMessage>): void;
 	public log(text: string): void;
 	public warn(text: string): void;
 	public error(text: string, msg?: any): void;
@@ -33,14 +30,14 @@ function noop(): void {
 	/* no operation */
 }
 
-export = function(RED: any): void {
+export = (RED: any): void => {
 	/**
 	 * Baseclass for Node-RED nodes.
 	 * This is a bit of a dirty trick to make definition of nodes
 	 * more straightforward as TypeScript classes.
 	 */
 	// tslint:disable-next-line:variable-name
-	let NodeRedNode: typeof Node = <any>function<TCredentials>(this: Node<TCredentials>, config: any): any {
+	const NodeRedNode: typeof Node = <any>function<TCredentials>(this: Node<TCredentials>, config: any): any {
 		RED.nodes.createNode(this, config);
 	};
 
@@ -65,7 +62,7 @@ export = function(RED: any): void {
 	enum ClientState {
 		Disconnected,
 		Connecting,
-		Connected
+		Connected,
 	}
 
 	type MessageHandler = (msg: MHubMessage) => void;
@@ -325,7 +322,7 @@ export = function(RED: any): void {
 				return;
 			}
 			const handlers = sub.handlers;
-			for (let nodeId in handlers) {
+			for (const nodeId in handlers) {
 				if (handlers.hasOwnProperty(nodeId)) {
 					handlers[nodeId](msg);
 				}
@@ -419,7 +416,7 @@ export = function(RED: any): void {
 				};
 				this.status(connectedStatus);
 			} else if (this._server.lastError) {
-				let errStatus = { ...STATUS_ERROR };
+				const errStatus = { ...STATUS_ERROR };
 				errStatus.text = RED._(errStatus.text, { reason: this._server.lastError.message });
 				this.status(errStatus);
 			} else {
@@ -516,8 +513,8 @@ export = function(RED: any): void {
 
 	RED.nodes.registerType("mhub-server", MHubServerNode, {
 		credentials: {
-			"username": { type: "text" },
-			"password": { type: "password" },
+			username: { type: "text" },
+			password: { type: "password" },
 		},
 	});
 	RED.nodes.registerType("mhub in", MHubInNode);
