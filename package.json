@@ -22,9 +22,8 @@
   },
   "homepage": "https://github.com/poelstra/node-red-contrib-mhub#readme",
   "dependencies": {
-    "@types/node": "^6.0.45",
-    "mhub": "^0.9.0",
-    "ts-promise": "^0.3.4"
+    "@types/node": "^12.6.8",
+    "mhub": "^2.0.0"
   },
   "devDependencies": {
     "istanbul": "^0.4.5",

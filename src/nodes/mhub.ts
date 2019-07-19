@@ -7,7 +7,6 @@
 
 import * as events from "events";
 import MHubClient, { MClientOptions, Message as MHubMessage } from "mhub";
-import Promise from "ts-promise";
 
 declare type RedMessage = Object;
 
@@ -132,7 +131,7 @@ export = function(RED: any): void {
 			// Handle Node-RED node destruction
 			this.on("close", (done: () => void): void => {
 				this._stopping = true;
-				this._close().then(done).done();
+				this._close().then(done);
 			});
 
 			// Create MHub client
@@ -178,7 +177,7 @@ export = function(RED: any): void {
 		 */
 		public register(node: Node): void {
 			this._nodes[node.id] = node;
-			this._ensureConnection();
+			this._ensureConnection().catch(noop);
 		}
 
 		/**
@@ -186,7 +185,6 @@ export = function(RED: any): void {
 		 * Connection to a server is closed when the last node unregisters.
 		 */
 		public unregister(node: Node, done?: () => void): void {
-			// TODO Unsubscribe everything for this node?
 			delete this._nodes[node.id];
 			if (Object.keys(this._nodes).length === 0) {
 				this._close().then(done || noop);
@@ -256,10 +254,16 @@ export = function(RED: any): void {
 			if (Object.keys(sub.handlers).length > 0) {
 				return;
 			}
-			// TODO unsubscribe from MHub once it supports that
-			// this._ensureConnection().then(() => this._client.unsubscribe(node, pattern, subId).catch((e) => {
-			// 	this.warn(RED._("mhub.errors.unsubscribe-failed", { error: e }));
-			// }));
+			// Unsubscribe this pattern from MHub, unless we're going to shut down
+			// completely anyway (because connection will be closed before response
+			// to unsubscribe can be received, and everything will then be unsubscribed
+			// anyway)
+			if (this._clientState === ClientState.Connected && !this._stopping) {
+				this._client.unsubscribe(node, pattern, subId)
+					.catch((e) => {
+						this.warn(RED._("mhub.errors.unsubscribe-failed", { error: e }));
+					});
+			}
 			delete this._subscriptions[subId];
 			delete nodeSubs[pattern];
 			if (Object.keys(this._nodePatterns).length === 0) {
@@ -301,12 +305,12 @@ export = function(RED: any): void {
 
 			this._setClientState(ClientState.Connecting);
 			let p = this._client.connect();
-			p.catch((err) => this._close(new Error("connect failed")));
+			p.catch((err: any) => this._close(new Error("connect failed"))).catch(noop);
 
 			if (this.credentials.username) {
 				p = p.then(() => {
 					const loginPromise = this._client.login(this.credentials.username, this.credentials.password);
-					loginPromise.catch((err) => this._close(new Error("login failed")));
+					loginPromise.catch((err: any) => this._close(new Error("login failed")));
 					return loginPromise;
 				});
 			}
@@ -349,7 +353,7 @@ export = function(RED: any): void {
 				() => {
 					this._reconnectTimer = undefined;
 					if (!this._stopping) {
-						this._ensureConnection();
+						this._ensureConnection().catch(noop);
 					}
 				},
 				this._reconnectTimeout
