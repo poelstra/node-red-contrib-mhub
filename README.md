@@ -50,6 +50,9 @@ Usage is very simple and basically the same as using e.g. the builtin MQTT nodes
 
 Notable changes listed below, for details see the version tags in Git.
 
+1.3.1 (2019-07-21):
+- Update dependencies to latest versions to address security warnings
+
 1.3.0 (2017-08-22):
 - Implement user/pass authentication of MHub 0.9.0
 - Silence EventEmitter warning when using many in/out nodes (false-positive)
