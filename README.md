@@ -39,10 +39,12 @@ Usage is very simple and basically the same as using e.g. the builtin MQTT nodes
 # Caveats
 
 - MHub messages are sent as an object containing topic, data and headers properties.
-  Node-RED by convention calls the `.data` property `.payload`, so the MHub in/out nodes emit/accept that name instead.
-- Messages in MHub are JSON objects, but many Node-RED nodes default to set the `.payload` property to a string.
-  It's an easy mistake to enter JSON in that box, which will cause the other side to receive a string instead of
-  an object. Use a `json` node to convert it to an object first.
+  Node-RED by convention calls MHub's `.data` property `.payload`, so the MHub in/out nodes
+  emit/accept `.payload` instead.
+- Messages in MHub are JSON objects (including the payload), but many Node-RED nodes default
+  to set the`.payload` property to a string.
+  It's an easy mistake to enter JSON in an edit box, which will cause the other side to
+  receive a string instead of an object. Use a `json` node to convert it to an object first.
 
 # Changelog
 
