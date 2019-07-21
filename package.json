@@ -36,6 +36,9 @@
     "lint": "tslint -t verbose src/**/*.ts",
     "build": "mkdir -p dist/nodes/ && cp -a src/nodes/*.html src/nodes/locales/ dist/nodes/ && tsc -p src/ && npm run -s lint",
     "clean": "rimraf -rf dist",
-    "prepublish": "npm run -s clean && npm run -s build"
+    "prepare": "npm run -s clean && npm run -s build",
+    "prepublishOnly": "npm run -s prepare",
+    "preversion": "npm install",
+    "version": "git add package-lock.json"
   }
 }
