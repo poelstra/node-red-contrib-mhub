@@ -22,15 +22,14 @@
   },
   "homepage": "https://github.com/poelstra/node-red-contrib-mhub#readme",
   "dependencies": {
-    "@types/node": "^12.6.8",
-    "mhub": "^2.0.0"
+    "mhub": "^2.1.0"
   },
   "devDependencies": {
+    "@types/node": "^13.13.1",
     "prettier": "^2.0.4",
-    "mocha": "^6.2.0",
-    "rimraf": "^2.6.3",
-    "tslint": "^5.18.0",
-    "typescript": "3.5.2"
+    "rimraf": "^3.0.2",
+    "tslint": "^6.1.1",
+    "typescript": "^3.8.3"
   },
   "scripts": {
     "lint": "tslint -t verbose src/**/*.ts",
