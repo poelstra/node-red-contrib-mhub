@@ -19,7 +19,9 @@ declare class Node<TCredentials = {}> extends events.EventEmitter {
 	public id: string;
 	public credentials: TCredentials;
 	constructor(config: any);
-	public send(msg: RedMessage | RedMessage[] | Array<RedMessage[] | RedMessage>): void;
+	public send(
+		msg: RedMessage | RedMessage[] | (RedMessage[] | RedMessage)[]
+	): void;
 	public log(text: string): void;
 	public warn(text: string): void;
 	public error(text: string, msg?: any): void;
@@ -37,14 +39,32 @@ export = (RED: any): void => {
 	 * more straightforward as TypeScript classes.
 	 */
 	// tslint:disable-next-line:variable-name
-	const NodeRedNode: typeof Node = <any>function<TCredentials>(this: Node<TCredentials>, config: any): any {
-		RED.nodes.createNode(this, config);
-	};
+	const NodeRedNode: typeof Node = <any>(
+		function <TCredentials>(this: Node<TCredentials>, config: any): any {
+			RED.nodes.createNode(this, config);
+		}
+	);
 
-	const STATUS_CONNECTING: Status = { fill: "yellow", shape: "ring", text: "node-red:common.status.connecting" };
-	const STATUS_DISCONNECTED: Status = { fill: "red", shape: "ring", text: "node-red:common.status.disconnected" };
-	const STATUS_ERROR: Status = { fill: "red", shape: "ring", text: "mhub.status.error" };
-	const STATUS_SUBSCRIBE_FAILED: Status = { fill: "yellow", shape: "ring", text: "mhub.status.subscribe-failed" };
+	const STATUS_CONNECTING: Status = {
+		fill: "yellow",
+		shape: "ring",
+		text: "node-red:common.status.connecting",
+	};
+	const STATUS_DISCONNECTED: Status = {
+		fill: "red",
+		shape: "ring",
+		text: "node-red:common.status.disconnected",
+	};
+	const STATUS_ERROR: Status = {
+		fill: "red",
+		shape: "ring",
+		text: "mhub.status.error",
+	};
+	const STATUS_SUBSCRIBE_FAILED: Status = {
+		fill: "yellow",
+		shape: "ring",
+		text: "mhub.status.subscribe-failed",
+	};
 
 	interface MHubServerConfig {
 		host: string;
@@ -109,7 +129,7 @@ export = (RED: any): void => {
 		private _clientState: ClientState = ClientState.Disconnected;
 		private _reconnectTimeout: number = 5000; // ms
 		private _reconnectTimer: NodeJS.Timer | undefined;
-		private _nodes: { [id: string]: Node; } = {}; // Registered NodeRED nodes
+		private _nodes: { [id: string]: Node } = {}; // Registered NodeRED nodes
 		private _subscriptions: Subscriptions = {};
 		private _subscriptionCounter: number = 0;
 		private _nodePatterns: NodePatterns = {};
@@ -151,20 +171,34 @@ export = (RED: any): void => {
 			}
 			this._client = new MHubClient(url, options);
 			this._client.on("open", (): void => {
-				this.log(RED._("mhub.state.connected", { server: this._client.url }));
+				this.log(
+					RED._("mhub.state.connected", { server: this._client.url })
+				);
 				this._setClientState(ClientState.Connected);
 			});
 			this._client.on("close", (): void => {
-				this.log(RED._("mhub.state.disconnected", { server: this._client.url }));
+				this.log(
+					RED._("mhub.state.disconnected", {
+						server: this._client.url,
+					})
+				);
 				this._handleClose();
 			});
 			this._client.on("error", (e: Error): void => {
-				this.error(RED._("mhub.state.connection-error", { error: e, server: this._client.url }));
+				this.error(
+					RED._("mhub.state.connection-error", {
+						error: e,
+						server: this._client.url,
+					})
+				);
 				this._handleClose(e);
 			});
-			this._client.on("message", (msg: MHubMessage, subscription: string): void => {
-				this._handleMessage(msg, subscription);
-			});
+			this._client.on(
+				"message",
+				(msg: MHubMessage, subscription: string): void => {
+					this._handleMessage(msg, subscription);
+				}
+			);
 		}
 
 		/**
@@ -201,23 +235,32 @@ export = (RED: any): void => {
 		 * again after the reconnect (which automatically triggers the same event again).
 		 * The promise may be rejected with a connection error or e.g. a subscribe failure.
 		 */
-		public subscribe(source: Node, node: string, pattern: string, onMessage: MessageHandler): Promise<void> {
+		public subscribe(
+			source: Node,
+			node: string,
+			pattern: string,
+			onMessage: MessageHandler
+		): Promise<void> {
 			return new Promise<void>((resolve, reject) => {
 				// Find subscriptions to specific node, or create a pool for this node
-				const nodeSubs = this._nodePatterns[node] || (this._nodePatterns[node] = {});
+				const nodeSubs =
+					this._nodePatterns[node] || (this._nodePatterns[node] = {});
 				// Find existing subscriptions using this pattern (on this MHub node)
 				let subId: string = nodeSubs[pattern];
 				// If no-one subscribed yet, create a new subscription for it
 				if (!subId) {
-					subId = nodeSubs[pattern] = String(this._subscriptionCounter++);
+					subId = nodeSubs[pattern] = String(
+						this._subscriptionCounter++
+					);
 					this._subscriptions[subId] = {
 						node,
 						pattern,
 						handlers: {},
 					};
 					resolve(
-						this._ensureConnection()
-							.then(() => this._client.subscribe(node, pattern, subId))
+						this._ensureConnection().then(() =>
+							this._client.subscribe(node, pattern, subId)
+						)
 					);
 				} else {
 					resolve(undefined);
@@ -255,11 +298,15 @@ export = (RED: any): void => {
 			// completely anyway (because connection will be closed before response
 			// to unsubscribe can be received, and everything will then be unsubscribed
 			// anyway)
-			if (this._clientState === ClientState.Connected && !this._stopping) {
-				this._client.unsubscribe(node, pattern, subId)
-					.catch((e) => {
-						this.warn(RED._("mhub.errors.unsubscribe-failed", { error: e }));
-					});
+			if (
+				this._clientState === ClientState.Connected &&
+				!this._stopping
+			) {
+				this._client.unsubscribe(node, pattern, subId).catch((e) => {
+					this.warn(
+						RED._("mhub.errors.unsubscribe-failed", { error: e })
+					);
+				});
 			}
 			delete this._subscriptions[subId];
 			delete nodeSubs[pattern];
@@ -272,7 +319,9 @@ export = (RED: any): void => {
 		 * Publish message to MHub node.
 		 */
 		public publish(node: string, msg: MHubMessage): Promise<void> {
-			return this._ensureConnection().then(() => this._client.publish(node, msg));
+			return this._ensureConnection().then(() =>
+				this._client.publish(node, msg)
+			);
 		}
 
 		public get connected(): boolean {
@@ -302,12 +351,19 @@ export = (RED: any): void => {
 
 			this._setClientState(ClientState.Connecting);
 			let p = this._client.connect();
-			p.catch((err: any) => this._close(new Error("connect failed"))).catch(noop);
+			p.catch((err: any) =>
+				this._close(new Error("connect failed"))
+			).catch(noop);
 
 			if (this.credentials.username) {
 				p = p.then(() => {
-					const loginPromise = this._client.login(this.credentials.username, this.credentials.password);
-					loginPromise.catch((err: any) => this._close(new Error("login failed")));
+					const loginPromise = this._client.login(
+						this.credentials.username,
+						this.credentials.password
+					);
+					loginPromise.catch((err: any) =>
+						this._close(new Error("login failed"))
+					);
 					return loginPromise;
 				});
 			}
@@ -346,15 +402,12 @@ export = (RED: any): void => {
 				// A reconnect is already planned, wait for that
 				return;
 			}
-			this._reconnectTimer = setTimeout(
-				() => {
-					this._reconnectTimer = undefined;
-					if (!this._stopping) {
-						this._ensureConnection().catch(noop);
-					}
-				},
-				this._reconnectTimeout
-			);
+			this._reconnectTimer = setTimeout(() => {
+				this._reconnectTimer = undefined;
+				if (!this._stopping) {
+					this._ensureConnection().catch(noop);
+				}
+			}, this._reconnectTimeout);
 		}
 
 		private _close(err?: Error): Promise<void> {
@@ -417,7 +470,9 @@ export = (RED: any): void => {
 				this.status(connectedStatus);
 			} else if (this._server.lastError) {
 				const errStatus = { ...STATUS_ERROR };
-				errStatus.text = RED._(errStatus.text, { reason: this._server.lastError.message });
+				errStatus.text = RED._(errStatus.text, {
+					reason: this._server.lastError.message,
+				});
 				this.status(errStatus);
 			} else {
 				this.status(STATUS_DISCONNECTED);
@@ -458,16 +513,20 @@ export = (RED: any): void => {
 		}
 
 		private _subscribe(node: string, pattern: string): void {
-			this._server.subscribe(this, node, pattern, (msg: MHubMessage): void => {
-				this.send({
-					headers: msg.headers,
-					payload: msg.data,
-					topic: msg.topic,
+			this._server
+				.subscribe(this, node, pattern, (msg: MHubMessage): void => {
+					this.send({
+						headers: msg.headers,
+						payload: msg.data,
+						topic: msg.topic,
+					});
+				})
+				.catch((e) => {
+					this.warn(
+						RED._("mhub.errors.subscribe-failed", { error: e })
+					);
+					this.status(STATUS_SUBSCRIBE_FAILED);
 				});
-			}).catch((e) => {
-				this.warn(RED._("mhub.errors.subscribe-failed", { error: e }));
-				this.status(STATUS_SUBSCRIBE_FAILED);
-			});
 		}
 	}
 
@@ -494,18 +553,22 @@ export = (RED: any): void => {
 					this.warn(RED._("mhub.errors.missing-or-invalid-topic"));
 					return;
 				}
-				const headers: { [key: string]: string; } = msg.headers;
+				const headers: { [key: string]: string } = msg.headers;
 				// tslint:disable-next-line:no-null-keyword
-				if (headers !== undefined && headers !== null && typeof headers !== "object") {
+				if (
+					headers !== undefined &&
+					headers !== null &&
+					typeof headers !== "object"
+				) {
 					this.warn(RED._("mhub.errors.invalid-headers"));
 					return;
 				}
 				const data: any = msg.payload;
-				const mhubMessage = new MHubMessage(
-					topic, data, headers
-				);
+				const mhubMessage = new MHubMessage(topic, data, headers);
 				this._server.publish(node, mhubMessage).catch((e) => {
-					this.warn(RED._("mhub.errors.publish-failed", { error: e }));
+					this.warn(
+						RED._("mhub.errors.publish-failed", { error: e })
+					);
 				});
 			});
 		}

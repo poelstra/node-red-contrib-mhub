@@ -26,6 +26,7 @@
     "mhub": "^2.0.0"
   },
   "devDependencies": {
+    "prettier": "^2.0.4",
     "mocha": "^6.2.0",
     "rimraf": "^2.6.3",
     "tslint": "^5.18.0",

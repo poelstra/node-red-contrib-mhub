@@ -55,13 +55,13 @@
 			name: { value: "" },
 			node: { value: "" },
 			pattern: { value: "" },
-			server: { type: "mhub-server", required: true }
+			server: { type: "mhub-server", required: true },
 		},
 		color: "#c7e9c0",
 		inputs: 0,
 		outputs: 1,
 		icon: "bridge.png",
-		label: function() {
+		label: function () {
 			if (this.name) {
 				return this.name;
 			}
@@ -74,7 +74,7 @@
 			}
 			return label;
 		},
-		labelStyle: function() {
+		labelStyle: function () {
 			return this.name ? "node_label_italic" : "";
 		},
 	});
@@ -141,14 +141,14 @@
 			name: { value: "" },
 			node: { value: "" },
 			topic: { value: "" },
-			server: { type:"mhub-server", required: true }
+			server: { type: "mhub-server", required: true },
 		},
 		color: "#c7e9c0",
 		inputs: 1,
 		outputs: 0,
 		icon: "bridge.png",
 		align: "right",
-		label: function() {
+		label: function () {
 			if (this.name) {
 				return this.name;
 			}
@@ -161,9 +161,9 @@
 			}
 			return label;
 		},
-		labelStyle: function() {
+		labelStyle: function () {
 			return this.name ? "node_label_italic" : "";
-		}
+		},
 	});
 </script>
 
@@ -211,15 +211,22 @@
 		category: "config",
 		defaults: {
 			host: { value: "", required: true },
-			keepalive: { value: 30, validate: function(n) { return n === undefined || RED.validators.number() && n >= 0; } },
+			keepalive: {
+				value: 30,
+				validate: function (n) {
+					return (
+						n === undefined || (RED.validators.number() && n >= 0)
+					);
+				},
+			},
 			tls: { type: "tls-config", required: false },
 			usetls: { value: false },
 		},
 		credentials: {
 			username: { type: "text" },
-			password: { type: "password" }
+			password: { type: "password" },
 		},
-		label: function() {
+		label: function () {
 			var label = this.host || "undefined";
 			if (this.credentials && this.credentials.user) {
 				label = this.credentials.user + "@" + label;
@@ -239,14 +246,14 @@
 				}
 			}
 			updateTLSOptions();
-			$("#node-config-input-usetls").on("click", function() {
+			$("#node-config-input-usetls").on("click", function () {
 				updateTLSOptions();
 			});
 		},
-		oneditsave: function() {
+		oneditsave: function () {
 			if (!$("#node-config-input-usetls").is(":checked")) {
 				$("#node-config-input-tls").val("");
 			}
-		}
+		},
 	});
 </script>

@@ -12,11 +12,7 @@
 		"moduleResolution": "node",
 		"outDir": "../dist/",
 		"rootDir": ".",
-		"types": [
-			"node"
-		],
-		"lib": [
-			"es6", "es2015.promise"
-		]
+		"types": ["node"],
+		"lib": ["es6", "es2015.promise"]
 	}
 }
