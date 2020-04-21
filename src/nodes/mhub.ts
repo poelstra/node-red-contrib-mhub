@@ -26,6 +26,18 @@ declare class Node<TCredentials = {}> extends events.EventEmitter {
 	public warn(text: string): void;
 	public error(text: string, msg?: any): void;
 	public status(config: Status): void;
+	public on(event: "close", listener: (done: () => void) => void): this;
+	public on(
+		event: "input",
+		listener: (
+			msg: unknown,
+			send?: (
+				msg: RedMessage | RedMessage[] | (RedMessage[] | RedMessage)[]
+			) => void,
+			done?: (error?: Error) => void
+		) => void
+	): this;
+	public on(event: string, listener: (...args: any[]) => void): this;
 }
 
 function noop(): void {
@@ -116,6 +128,11 @@ export = (RED: any): void => {
 
 	interface MessageHandlers {
 		[nodeRedNodeId: string]: MessageHandler;
+	}
+
+	interface MHubServerNode extends Node<MHubServerCredentials> {
+		on(event: "status", listener: (state: ClientState) => void): this;
+		on(event: string, listener: (...args: any[]) => void): this;
 	}
 
 	/**
@@ -542,7 +559,7 @@ export = (RED: any): void => {
 				return;
 			}
 
-			this.on("input", (msg: any) => {
+			this.on("input", (msg: any, _send, done) => {
 				const node: string = config.node || msg.node || "default";
 				if (typeof node !== "string") {
 					this.warn(RED._("mhub.errors.invalid-node"));
@@ -565,11 +582,18 @@ export = (RED: any): void => {
 				}
 				const data: any = msg.payload;
 				const mhubMessage = new MHubMessage(topic, data, headers);
-				this._server.publish(node, mhubMessage).catch((e) => {
-					this.warn(
-						RED._("mhub.errors.publish-failed", { error: e })
-					);
-				});
+				this._server
+					.publish(node, mhubMessage)
+					.catch((e) => {
+						this.warn(
+							RED._("mhub.errors.publish-failed", { error: e })
+						);
+					})
+					.then(() => {
+						if (done) {
+							done();
+						}
+					});
 			});
 		}
 	}
