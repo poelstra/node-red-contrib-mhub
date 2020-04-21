@@ -50,6 +50,11 @@ Usage is very simple and basically the same as using e.g. the builtin MQTT nodes
 
 Notable changes listed below, for details see the version tags in Git.
 
+1.4.0 (2020-04-21):
+- Update to Node-RED 1.0 (handle node complete event, move to "network" category)
+- Update MHub to 2.1.0
+- Update build dependencies
+
 1.3.1 (2019-07-21):
 - Update dependencies to latest versions to address security warnings
 
